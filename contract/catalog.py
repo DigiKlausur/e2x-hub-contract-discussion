@@ -9,7 +9,6 @@ from .errors import (
     UnknownResourceTierError,
     UnknownSpawnRoleError,
 )
-from .selection import ImageSelection, ResolvedSpawn, SpawnSelection
 from .types import SpawnRole
 
 
@@ -143,29 +142,6 @@ class InfrastructureCatalogOptions(BaseModel):
 
     image_family_options: ImageFamilyOptions
     spawn_role_options: dict[SpawnRole, SpawnRoleOptions]
-
-    def resolve(self, selection: SpawnSelection) -> ResolvedSpawn:
-        role_opts = self.spawn_role_options.get(selection.spawn_role)
-        if role_opts is None:
-            raise UnknownSpawnRoleError(selection.spawn_role)
-        image = selection.image or ImageSelection(family=self.image_family_options.default_family)
-        family_opt = self.image_family_options.families.get(image.family)
-        if family_opt is None:
-            raise UnknownImageFamilyError(image.family)
-        if image.tag is not None and image.tag not in family_opt.tags:
-            raise UnknownImageTagError(image.family, image.tag)
-        profile = selection.profile_name or role_opts.profile_options.default_profile
-        role_opts.profile_options.assert_profile_exists(profile)
-
-        tier = selection.resource_tier or role_opts.resource_tier_options.default_tier
-        role_opts.resource_tier_options.assert_tier_exists(tier)
-        return ResolvedSpawn(
-            spawn_role=selection.spawn_role,
-            family=image.family,
-            tag=image.tag or family_opt.default_tag,
-            profile=profile,
-            resource_tier=tier,
-        )
 
     def assert_image_selection_exists(self, family_name: str, tag: str | None = None) -> None:
         self.image_family_options.assert_family_and_tag_exists(family_name, tag)

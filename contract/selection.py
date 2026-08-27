@@ -18,24 +18,11 @@ class SpawnSelection(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     spawn_role: SpawnRole
     image: ImageSelection | None = None
-    resource_tier: str | None = None
+    resource_tier_name: str | None = None
     profile_name: str | None = None
 
 
-class ResolvedSpawn(BaseModel):
-    """A resolved spawn configuration, including spawn role, image family, tag, profile,
-    and resource tier."""
-
-    model_config = ConfigDict(extra="forbid", frozen=True)
-
-    spawn_role: SpawnRole
-    family: str = Field(min_length=1)
-    tag: str = Field(min_length=1)
-    profile: str = Field(min_length=1)
-    resource_tier: str = Field(min_length=1)
-
-
-class CourseContext(BaseModel):
+class CourseReference(BaseModel):
     """
     Represents the context of a specific course and term.
     """
@@ -50,9 +37,9 @@ class CourseContext(BaseModel):
 
 class SpawnOffering(BaseModel):
     """
-    Represents a spawn option for a user, including the course context and the spawn selection.
+    Represents a spawn option for a user, including the course reference and the spawn selection.
     """
 
     model_config = ConfigDict(extra="forbid", frozen=True)
-    course_context: CourseContext
+    course: CourseReference
     selection: SpawnSelection

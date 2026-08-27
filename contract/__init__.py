@@ -17,31 +17,30 @@ from .errors import (
     UnknownSpawnRoleError,
 )
 from .providers import InfrastructureCatalogProvider, SpawnOfferingProvider
-from .selection import CourseContext, ImageSelection, ResolvedSpawn, SpawnOffering, SpawnSelection
+from .selection import CourseReference, ImageSelection, SpawnOffering, SpawnSelection
 from .types import SpawnRole, UserLike
 
 __all__ = [
+    "CourseReference",
+    "ImageFamilyOption",
+    "ImageFamilyOptions",
+    "ImageSelection",
+    "ImageTagInfo",
+    "InfrastructureCatalogOptions",
+    "InfrastructureCatalogProvider",
+    "ProfileOption",
+    "ProfileOptions",
+    "ResourceTierOption",
+    "ResourceTierOptions",
+    "SpawnOffering",
+    "SpawnOfferingProvider",
+    "SpawnRole",
+    "SpawnRoleOptions",
+    "SpawnSelection",
     "UnknownImageFamilyError",
     "UnknownImageTagError",
     "UnknownProfileError",
     "UnknownResourceTierError",
     "UnknownSpawnRoleError",
-    "SpawnRole",
     "UserLike",
-    "ImageSelection",
-    "ResolvedSpawn",
-    "SpawnSelection",
-    "CourseContext",
-    "SpawnOffering",
-    "ProfileOption",
-    "ProfileOptions",
-    "ResourceTierOption",
-    "ResourceTierOptions",
-    "ImageFamilyOption",
-    "ImageFamilyOptions",
-    "ImageTagInfo",
-    "SpawnRoleOptions",
-    "InfrastructureCatalogOptions",
-    "InfrastructureCatalogProvider",
-    "SpawnOfferingProvider",
 ]
