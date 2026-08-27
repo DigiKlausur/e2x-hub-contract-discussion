@@ -40,11 +40,7 @@ spawn time. The user's only spawn-time choice is *which course/term to launch* a
 
 4.  The user picks which offering (course/term) to launch.
 
-5.  spawner: catalog.resolve(selection) → ResolvedSpawn
-      Any selection field left unset is filled from the catalog default;
-      every reference is validated.
-
-6.  spawner: start() translates the ResolvedSpawn to hardware and launches the container.
+6.  spawner: start() translates the SpawnOffering to hardware and launches the container.
 ```
 
 ## Modules
@@ -52,8 +48,8 @@ spawn time. The user's only spawn-time choice is *which course/term to launch* a
 | Module         | What's in it                                                                  |
 |----------------|-------------------------------------------------------------------------------|
 | `types.py`     | Shared primitives used across the other modules: `SpawnRole`, `UserLike`      |
-| `catalog.py`   | The infrastructure catalog (what *can* be run) and `InfrastructureCatalogOptions.resolve()` |
-| `selection.py` | The offer/selection layer (what a user *may* launch, where, and the resolved result) |
+| `catalog.py`   | The infrastructure catalog (what *can* be run)                                |
+| `selection.py` | The offer/selection layer (what a user *may* launch and where)                |
 | `providers.py` | The two protocols that define the boundary                                    |
 | `errors.py`    | `CatalogError` and the typed lookup errors                                    |
 
@@ -64,7 +60,6 @@ from e2x_course_hub.contract import (
     InfrastructureCatalogOptions,
     SpawnOffering,
     SpawnSelection,
-    ResolvedSpawn,
     SpawnRole,
     CatalogError,
 )
@@ -98,26 +93,6 @@ Guarantees, enforced at construction time:
   message listing the valid keys.
 - All models are `frozen` and `extra="forbid"` — immutable, and unknown keys are rejected.
 
-### `resolve()` — the single entry point
-
-`InfrastructureCatalogOptions.resolve(selection: SpawnSelection) -> ResolvedSpawn`
-
-In a `SpawnSelection`, **`None` means "not configured → use the catalog default"** (no
-image → default family, no tag → default tag, no profile → default profile, no tier →
-default tier). A course/term config often sets only some of these (e.g., the image but
-not the tier); `resolve()` fills the rest and validates every reference. It is the only
-place where that convention is materialized. The result is a fully concrete
-`ResolvedSpawn` — no `None`s, no dangling names — or a typed `CatalogError`.
-
-```python
-try:
-    resolved = catalog.resolve(selection)
-except CatalogError as e:
-    ...  # user-facing: unknown role / family / tag / profile / tier
-```
-
-The `assert_*` methods on the catalog and the option collections are pre-flight checks
-for callers that want to validate before resolving.
 
 ## Selections and offerings — what a user *may* launch
 
@@ -125,9 +100,8 @@ for callers that want to validate before resolving.
 |------------------|------------------------------------------------------------------------------------------|
 | `ImageSelection` | An image family + optional tag                                                            |
 | `SpawnSelection` | The selection configured for a course/term: role + image / tier / profile. A field left `None` means "not configured → catalog default" |
-| `CourseContext`  | Where: course + term (+ display name / description)                                       |
+| `CourseReference`  | Where: course + term (+ display name / description)                                       |
 | `SpawnOffering`  | A course/term the user may launch, carrying their role in it and its configured selection. The unit returned by `get_spawn_offerings()` |
-| `ResolvedSpawn`  | The fully concrete result of `resolve()` — what the spawner actually launches            |
 
 > **Security note:** `SpawnSelection.spawn_role` is assigned by the hub from RBAC (a
 > user is a student in one course, a grader in another). It is **authoritative** — the
@@ -142,7 +116,7 @@ There are exactly two failure classes:
 1. **Malformed catalog** → `pydantic.ValidationError` at construction time. Catalog data
    that doesn't fit the schema (including broken `default_*` references) fails fast when
    the catalog is loaded.
-2. **Invalid selection** → a `CatalogError` subclass at `resolve()` / `assert_*` time.
+2. **Invalid selection** → a `CatalogError` subclass at  `assert_*` time.
    All of them are also `ValueError`s, and all are catchable as `CatalogError`:
 
 | Exception                  | Raised when                                     |
